@@ -17,6 +17,24 @@ const fullUrl = (path = '') => {
 };
 
 program
+    .command('get [path]')
+    .description('perforn an HTTP GET request for path (default is /)')
+    .action((path = '/') => {
+        const options = {
+            url: fullUrl(path),
+            json: program.json,
+        };
+        request(options, (err, res, body) => {
+            if (program.json) {
+                console.log(JSON.stringify(err || body));
+            } else {
+                if (err) throw err;
+                console.log(body);
+            }
+        });
+    });
+
+program
     .version(pkg.version)
     .description(pkg.description)
     .usage('[options] <command> [...]')
@@ -35,4 +53,4 @@ program.parse(process.argv);
 
 if(!program.args.filter(arg => typeof arg === 'object').length) {
     program.help();
-}
+} 
