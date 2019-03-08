@@ -83,6 +83,20 @@ program
     });
 
 program
+    .command('delete-index')
+    .description('deletes an index')
+    .action(() => {
+        if (!program.index) {
+            const msg = 'No index specified! Use --index <name>';
+            if (!program.json) throw Error(msg);
+            console.log(JSON.stringify({error: msg}));
+            return;
+        }
+
+        request.del(fullUrl(), handleResponse);
+    });
+
+program
     .command('bulk <file>')
     .description('read and perform bulk options from the specific file')
     .action(file => {
