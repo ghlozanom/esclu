@@ -13,6 +13,9 @@ const fullUrl = (path = '') => {
             url += program.type + '/';
         }
     }
+    if(program.id){
+        url += program.id + '/';
+    }
     return url + path.replace(/^\/*/, '');
 };
 
@@ -34,7 +37,8 @@ program
     .option('-j, --json', 'format output as JSON')
     .option('-i, --index <name>', 'which index to use')
     .option('-t, --type <type>', 'default type for bulk operations')
-    .option('-f, --filter <filter>', 'source filter for the query results');
+    .option('-f, --filter <filter>', 'source filter for the query results')
+    .option('-id, --id <idflag>', 'id flag to use');
     
 program
     .command('url [path]')
@@ -122,7 +126,42 @@ program
             stream.pipe(req);
             req.pipe(process.stdout);
         });
-    });;
+    });
+
+program
+    .command('put <file>')
+    .description('adds a register')
+    .action(file => {
+        if (!program.id) {
+            const msg = 'No id specified! Use --id <id>';
+            if (!program.json) throw Error(msg);
+            console.log(JSON.stringify({error: msg}));
+            return;
+        }
+
+        fs.stat(file, (err, stats) => {
+            if (err) {
+                if (program.json) {
+                    console.log(JSON.stringify(err));
+                    return
+                }
+                throw err;
+            }
+            const options = {
+                url: fullUrl(''),
+                json: true,
+                headers: {
+                    'content-length' : stats.size,
+                    'content-type' : 'application/json',
+                }
+            };
+            const req = request.put(options);
+
+            const stream = fs.createReadStream(file);
+            stream.pipe(req);
+            req.pipe(process.stdout);
+        });
+    });    
 
 program
     .command('query [queries...]')
